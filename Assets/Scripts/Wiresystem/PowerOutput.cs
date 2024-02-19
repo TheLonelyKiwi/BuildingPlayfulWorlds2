@@ -3,20 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(PowerBlockInput))]
-public class PowerBlockOutput : MonoBehaviour
+public class PowerOutput : MonoBehaviour
 {
-    private List<Wire> wires; //list of all the wries
-    private PowerBlockInput input;
+    private List<Wire> wires; //list of all the wires connected
 
-    public int connectionPoints; //amount of sockets on the powerblock
+    public int connectionPoints = 3; //amount of sockets on the powerblock
     private bool isConnected = false; 
     private bool isPowered;
 
     private void Start()
     {
         wires = new List<Wire>();
-        input = GetComponent<PowerBlockInput>();
     }
 
     private void WireUpdate() //custom update
@@ -61,6 +58,16 @@ public class PowerBlockOutput : MonoBehaviour
         {
             return true; 
         }
+    }
+
+    public int GetPowerDrain() //part of system to check if max power drain isn't being exceeded. 
+    {
+        int drain = 0;
+        foreach (Wire i in wires)
+        {
+            drain += i.GetDestPowerDrain();
+        }
+        return drain;
     }
 
     public void SetPowerState(bool isPowered)

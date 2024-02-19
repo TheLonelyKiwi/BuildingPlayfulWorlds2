@@ -3,35 +3,31 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
-[RequireComponent(typeof(PowerBlockOutput))]
-public class PowerBlockInput : MonoBehaviour
+public class PowerInput : MonoBehaviour
 {
     private Wire wire;
-    private PowerBlockOutput output; 
+
+    private bool hasOutput; 
     
-    public bool isPowered;
-    public bool isConnected = false;
-
-    private void Start()
-    {
-        output = GetComponent<PowerBlockOutput>();
-    }
-
+    private bool isPowered;
+    private bool isConnected = false;
+    
     private void WireUpdate()
     {
         if (isConnected)
         {
             if (wire.GetPowerState()) //sets output side of distribution block to false. 
             {
-                isPowered = true; 
-                output.SetPowerState(true);
+                SetPowerState(true);
             }
             else
             {
-                isPowered = false; 
-                output.SetPowerState(false);
+                SetPowerState(false);
             }
+        }
+        else
+        {
+            SetPowerState(false);
         }
     }
     
@@ -42,6 +38,13 @@ public class PowerBlockInput : MonoBehaviour
             isConnected = true;
             this.wire = wire; 
         }
+        WireUpdate();
+    }
+    
+    public void RemoveWire()
+    {
+        isConnected = false;
+        this.wire = null;
         WireUpdate();
     }
 
@@ -63,5 +66,10 @@ public class PowerBlockInput : MonoBehaviour
     public bool GetConnectedState()
     {
         return this.isConnected;
+    }
+
+    public bool GetOutputState()
+    {
+        return hasOutput;
     }
 }
