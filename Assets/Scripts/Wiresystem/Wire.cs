@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Wire : MonoBehaviour
+public class Wire
 {
     private PowerOutput source;
     private PowerInput dest; 
@@ -18,12 +18,13 @@ public class Wire : MonoBehaviour
     {
         return isPowered;
     }
-    
+
     public void CreateWire(PowerOutput source, PowerInput dest)
     {
         this.source = source;
         this.dest = dest;
         
+        SetPowerState(source.GetPowerState());
         this.source.AddWire(this);
         this.dest.AddWire(this);
     }
@@ -45,7 +46,7 @@ public class Wire : MonoBehaviour
         else
         {
             return 0; 
-            //add check if devices is drawing power. 
+            //add check if devices are drawing power. 
         }
     }
 }
