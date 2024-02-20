@@ -15,11 +15,11 @@ public class WireSpline : MonoBehaviour
     
     private SplineContainer spline;
 
-    private Transform source, dest;
+    [SerializeField] private Transform source, dest;
     private Transform sourceGroundPoint; //only used when wire is drawn from player. 
     
     private Vector3 sourceStart, destStart;
-    private bool isPlayerWire;
+    [SerializeField] private bool isPlayerWire;
     private void Start()
     {
         spline = GetComponent<SplineContainer>();
@@ -29,7 +29,7 @@ public class WireSpline : MonoBehaviour
     {
         FindStartingPositions();
         
-        var hits = Physics.RaycastAll(sourceStart, destStart, ignoreLayer);
+        RaycastHit[] hits = Physics.RaycastAll(source.position, dest.position - source.position, Mathf.Infinity, ignoreLayer);
         int posCount = FindPositionCount(hits); 
         Vector3[] positions = FindVectorPositions(posCount, hits);
         
@@ -47,7 +47,7 @@ public class WireSpline : MonoBehaviour
 
     private int FindPositionCount(RaycastHit[] cast)
     {
-        int posCount = 2; 
+        int posCount = 1; 
         
         
         if (sourceGroundPoint != null)
@@ -58,6 +58,12 @@ public class WireSpline : MonoBehaviour
         if (cast.Length > 0)
         {
             posCount += cast.Length;
+
+            foreach (RaycastHit i in cast)
+            {
+                Debug.Log(i.collider.gameObject.name);
+            }
+            
         }
 
         return posCount;
@@ -108,5 +114,11 @@ public class WireSpline : MonoBehaviour
             var bezier = new BezierKnot(point);
             spline.Spline.Add(bezier, TangentMode.AutoSmooth);
         }
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawRay(source.position, dest.position - source.position);
     }
 }
