@@ -29,7 +29,7 @@ public class WireSpline : MonoBehaviour
     {
         FindStartingPositions();
         
-        RaycastHit[] hits = Physics.RaycastAll(source.position, dest.position - source.position, Mathf.Infinity, ignoreLayer);
+        RaycastHit[] hits = Physics.RaycastAll(source.position, dest.position - source.position, Mathf.Infinity);
         int posCount = FindPositionCount(hits); 
         Vector3[] positions = FindVectorPositions(posCount, hits);
         
@@ -58,12 +58,6 @@ public class WireSpline : MonoBehaviour
         if (cast.Length > 0)
         {
             posCount += cast.Length;
-
-            foreach (RaycastHit i in cast)
-            {
-                Debug.Log(i.collider.gameObject.name);
-            }
-            
         }
 
         return posCount;
@@ -92,7 +86,7 @@ public class WireSpline : MonoBehaviour
             positions[i] = center + bisector * 2;
         }
         
-        sourceStart = (positions[1] - sourceStart).normalized;
+        /*sourceStart = (positions[1] - sourceStart).normalized;
         if (isPlayerWire)
         {
             destStart = (sourceStart - positions[^3]).normalized;
@@ -100,7 +94,7 @@ public class WireSpline : MonoBehaviour
         else
         {
             destStart = (sourceStart - positions[^2]).normalized;
-        }
+        } */
 
         return positions;
     } 
