@@ -5,9 +5,9 @@ using UnityEngine;
 using Unity.Mathematics;
 using UnityEngine.Splines;
 
-//Draws and updates splines attached to wires. 
-//kind thanks to Laurens Lancel for helping me with this and sharing some code from a personal project. 
-
+/*Draws spline curves around objects where wires have to be generated. Uses unity spline addon. 
+*kind thanks to Laurens Lancel for helping me with this and sharing some code from a personal project. 
+*/
 public class WireSpline : MonoBehaviour
 {
     [SerializeField] private LayerMask ignoreLayer;
@@ -83,7 +83,7 @@ public class WireSpline : MonoBehaviour
             Vector3 center = hits[i - 1].collider.gameObject.transform.position;
             
             Vector3 bisector = (positions[i - 1].normalized + positions[i + 1].normalized).normalized * smoothingAngle;
-            positions[i] = center + bisector * 2;
+            positions[i] = center + bisector * 5;
         }
         
         /*sourceStart = (positions[1] - sourceStart).normalized;
@@ -97,8 +97,7 @@ public class WireSpline : MonoBehaviour
         } */
 
         return positions;
-    } 
-    
+    }
     private void UpdateSpline(Vector3[] positions)
     {
         spline.Spline.Clear();
@@ -108,6 +107,8 @@ public class WireSpline : MonoBehaviour
             var bezier = new BezierKnot(point);
             spline.Spline.Add(bezier, TangentMode.AutoSmooth);
         }
+
+        spline.Spline.GetCurve(1);
     }
 
     private void OnDrawGizmos()
