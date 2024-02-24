@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Splines;
 
@@ -11,34 +12,22 @@ using UnityEngine.Splines;
 public class SplineScan : MonoBehaviour
 {
     private SplineAnimate animator; //animator attached to rider obj 
-    private SplineContainer parentContainer; //this is the container that holds the spline.
+    private WireSpline parentContainer; //this is the container that holds the spline.
 
-    private List<Vector3> collidedObj; 
-
+    private List<Vector3> collidedObj;
     private LayerMask ignoreLayer; 
 
-    public void RunRider(SplineContainer parent, LayerMask ignoreLayer) 
+    public void RunRider(WireSpline parent, SplineContainer path, LayerMask ignoreLayer) 
     {
         this.ignoreLayer = ignoreLayer;
         
+        //runs collider over previously generated Spline
         parentContainer = parent;
-        animator.Container.Spline = parentContainer.Splines[0];
+        animator.Container = path;
+        gameObject.GetComponent<BoxCollider>().enabled = true; 
         animator.Play();
     }
-
-    private Vector3[] convertData() //converts list to Vector3[]
-    {
-        int length = collidedObj.Count;
-        Vector3[] points = new Vector3[length];
-
-        for (int i = 0; i < length; i++)
-        {
-            points[i] = collidedObj[i];
-        }
-
-        return points; 
-    }
-    void Start()
+    void Awake()
     {
         animator = GetComponent<SplineAnimate>();
 
@@ -49,16 +38,18 @@ public class SplineScan : MonoBehaviour
     {
         if (!animator.IsPlaying) //when finished moving across Spline destroy self. 
         {
-            //return points list for comparisson 
+            parentContainer.GenerateNewPositions(collidedObj.ToArray());
             Destroy(gameObject);
         }
     }
 
     private void OnTriggerEnter(Collider collider)
     {
+        //adds point of impact as a new points that has to be avoided. 
         if (collider.gameObject.layer != ignoreLayer)
         {
-            collidedObj.Add(collider.gameObject.transform.position);
+            Debug.Log(collider.gameObject.name);
+            collidedObj.Add(collider.ClosestPoint(transform.position));
         }
     }
 }

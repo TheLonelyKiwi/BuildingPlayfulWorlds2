@@ -10,8 +10,11 @@ using UnityEngine.Splines;
 */
 public class WireSpline : MonoBehaviour
 {
+    [SerializeField] private GameObject splineTester; 
     [SerializeField] private LayerMask ignoreLayer;
     [SerializeField] private float smoothingAngle = 0.5f;
+    [SerializeField] private float bisectorDodgeAmount = 5f;
+    [SerializeField] private bool isPlayerWire;
     
     private SplineContainer spline;
 
@@ -19,21 +22,28 @@ public class WireSpline : MonoBehaviour
     private Transform sourceGroundPoint; //only used when wire is drawn from player. 
     
     private Vector3 sourceStart, destStart;
-    [SerializeField] private bool isPlayerWire;
+    
+    private int positionCount;
+    private RaycastHit[] hits;
     private void Start()
     {
         spline = GetComponent<SplineContainer>();
+        
+        GenerateSpline();
     }
     
-    private void Update()
+    private void GenerateSpline()
     {
         FindStartingPositions();
         
-        RaycastHit[] hits = Physics.RaycastAll(source.position, dest.position - source.position, Mathf.Infinity);
-        int posCount = FindPositionCount(hits); 
-        Vector3[] positions = FindVectorPositions(posCount, hits);
+        hits = Physics.RaycastAll(source.position, dest.position - source.position, Mathf.Infinity);
+        positionCount = FindPositionCount(); 
+        Vector3[] positions = FindVectorPositions();
         
         UpdateSpline(positions);
+
+        GameObject tester = Instantiate(splineTester, transform.position, quaternion.identity);
+        tester.GetComponent<SplineScan>().RunRider(this, spline, ignoreLayer);
     }
 
     private void FindStartingPositions()
@@ -45,7 +55,7 @@ public class WireSpline : MonoBehaviour
         destStart = dPos + (sPos - dPos).normalized;
     }
 
-    private int FindPositionCount(RaycastHit[] cast)
+    private int FindPositionCount()
     {
         int posCount = 1; 
         
@@ -55,15 +65,15 @@ public class WireSpline : MonoBehaviour
             posCount++;
         }
         
-        if (cast.Length > 0)
+        if (hits.Length > 0)
         {
-            posCount += cast.Length;
+            posCount += hits.Length;
         }
 
         return posCount;
     }
 
-    private Vector3[] FindVectorPositions(int positionCount, RaycastHit[] hits)
+    private Vector3[] FindVectorPositions()
     {
         Vector3[] positions = new Vector3[positionCount];
         
@@ -83,20 +93,36 @@ public class WireSpline : MonoBehaviour
             Vector3 center = hits[i - 1].collider.gameObject.transform.position;
             
             Vector3 bisector = (positions[i - 1].normalized + positions[i + 1].normalized).normalized * smoothingAngle;
-            positions[i] = center + bisector * 5;
+            positions[i] = center + bisector * bisectorDodgeAmount;
+        }
+        return positions;
+    }
+
+    public void GenerateNewPositions(Vector3[] newPoints)
+    {
+        int posCount = positionCount + newPoints.Length;
+        int pointsFromIndex = 1; 
+        
+        Vector3[] positions = new Vector3[posCount];
+        
+        positions[0] = sourceStart;
+        positions[^1] = destStart;
+        
+        if (isPlayerWire) //check if drawn from player
+        {
+            positions[^2] = sourceGroundPoint.position;
+            pointsFromIndex = 2;
+        }
+
+        for (int i = 1; i < posCount - pointsFromIndex; i++)
+        {
+            Vector3 center = hits[i - 1].collider.gameObject.transform.position;
+            
+            Vector3 bisector = (positions[i - 1].normalized + positions[i + 1].normalized).normalized * smoothingAngle;
+            positions[i] = center + bisector * bisectorDodgeAmount;
         }
         
-        /*sourceStart = (positions[1] - sourceStart).normalized;
-        if (isPlayerWire)
-        {
-            destStart = (sourceStart - positions[^3]).normalized;
-        }
-        else
-        {
-            destStart = (sourceStart - positions[^2]).normalized;
-        } */
-
-        return positions;
+        UpdateSpline(positions);
     }
     private void UpdateSpline(Vector3[] positions)
     {

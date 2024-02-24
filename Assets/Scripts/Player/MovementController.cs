@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -14,7 +15,6 @@ public class MovementController : MonoBehaviour
     
     //animation hashes
     private int isMovingHash = Animator.StringToHash("isMoving");
-    private int isJumpingHash = Animator.StringToHash("isJumping");
     
     //gravity
     private float gravity = -9.81f;
@@ -27,6 +27,16 @@ public class MovementController : MonoBehaviour
     private bool isMovementPressed;
     [SerializeField] private float moveSpeedMultiplier = 3.0f; 
     private float RotationFactor = 20f;
+    
+    //state machine 
+    private enum State
+    {
+        Idle, 
+        Moving, 
+    }
+
+    private State currentState; 
+    
     
     //internal jump variables
     private bool isJumpPressed = false;
@@ -41,25 +51,11 @@ public class MovementController : MonoBehaviour
         playerInput = new PlayerInput();
         characterController = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
-        
-        SetupJump();
 
         playerInput.CharacterControls.Move.started += OnMovementInput;
         playerInput.CharacterControls.Move.performed += OnMovementInput;
         playerInput.CharacterControls.Move.canceled += OnMovementInput;
-        playerInput.CharacterControls.Jump.started += OnJumpInput;
-        playerInput.CharacterControls.Jump.canceled += OnJumpInput;
     }
-
-    private void SetupJump()
-    {
-        //code used from iHeartGameDev
-        float timeToApex = maxJumpTime / 2;
-        gravity = (-2 * maxJumpHeight) / Mathf.Pow(timeToApex, 2);
-        
-        initialJumpVelocity = (2 * maxJumpHeight) / timeToApex;
-    }
-    
     private void OnJumpInput(InputAction.CallbackContext context)
     {
         isJumpPressed = context.ReadValueAsButton();
@@ -77,11 +73,13 @@ public class MovementController : MonoBehaviour
         HandleRotation();
         handleAnimation();
         
-        characterController.Move(currentMovement * Time.deltaTime);
+
+    characterController.Move(currentMovement * Time.deltaTime);
         
         HandleGravity();
-        HandleJump();
     }
+
+    private void MovementUpdate()
     
     private void HandleGravity()
     {
@@ -89,7 +87,6 @@ public class MovementController : MonoBehaviour
         
         if (characterController.isGrounded)
         {
-            animator.SetBool(isJumpingHash, false);
             currentMovement.y = groundedGravity;
         }
         else if (isFalling)
@@ -107,20 +104,7 @@ public class MovementController : MonoBehaviour
         float newYVelocity = currentVelocity + (gravity * modifier * Time.deltaTime);
         return (currentVelocity + newYVelocity) * 0.5f;
     }
-
-    private void HandleJump()
-    {
-        if (!isJumping && isJumpPressed && characterController.isGrounded)
-        {
-            animator.SetBool(isJumpingHash, true);
-            isJumping = true; 
-            currentMovement.y = initialJumpVelocity * .5f;
-        } else if (!isJumpPressed && characterController.isGrounded)
-        {
-            isJumping = false; 
-        }
-    }
-
+    
     private void HandleRotation()
     {
         Vector3 lookPosition; 
@@ -134,7 +118,7 @@ public class MovementController : MonoBehaviour
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, RotationFactor * Time.deltaTime);
         }
     }
-
+    
     private void handleAnimation()
     {
         bool isMoving = animator.GetBool(isMovingHash);
