@@ -78,8 +78,6 @@ public class MovementController : MonoBehaviour
         
         HandleGravity();
     }
-
-    private void MovementUpdate()
     
     private void HandleGravity()
     {
