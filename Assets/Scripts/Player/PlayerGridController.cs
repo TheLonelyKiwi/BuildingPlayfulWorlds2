@@ -117,7 +117,7 @@ public class PlayerGridController : MonoBehaviour
         Vector3 lookPos;
         lookPos.x = currentMovement.x;
         lookPos.y = 0;
-        lookPos.z = currentMovement.z;
+        lookPos.z = -1 * currentMovement.z;
 
         if (isMovementPressed)
         {

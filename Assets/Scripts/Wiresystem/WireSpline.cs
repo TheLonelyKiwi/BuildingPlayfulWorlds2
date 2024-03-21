@@ -25,7 +25,8 @@ public class WireSpline : MonoBehaviour
     
     private int positionCount;
     private RaycastHit[] hits;
-    private void Start()
+    
+    private void Awake()
     {
         spline = GetComponent<SplineContainer>();
         

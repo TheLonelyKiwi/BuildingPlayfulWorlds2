@@ -47,7 +47,11 @@ public class PowerInput : MonoBehaviour
         this.wire = null;
         WireUpdate();
     }
-
+    
+    public bool GetOutputState()
+    {
+        return hasOutput;
+    }
     public void SetPowerState(bool isPowered)
     {
         this.isPowered = isPowered;
@@ -68,8 +72,5 @@ public class PowerInput : MonoBehaviour
         return this.isConnected;
     }
 
-    public bool GetOutputState()
-    {
-        return hasOutput;
-    }
+    
 }

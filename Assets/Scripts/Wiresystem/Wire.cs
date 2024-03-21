@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Wire
+public class Wire : MonoBehaviour
 {
     private PowerOutput source;
     private PowerInput dest; 
@@ -27,6 +27,7 @@ public class Wire
         SetPowerState(source.GetPowerState());
         this.source.AddWire(this);
         this.dest.AddWire(this);
+        
     }
 
     public void DestroyWire()
@@ -35,6 +36,7 @@ public class Wire
         dest.RemoveWire();
         
         //destroy game obj 
+        Destroy(gameObject);
     }
 
     public int GetDestPowerDrain()
